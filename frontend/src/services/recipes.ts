@@ -1,3 +1,15 @@
+import type { BmiClassification } from '../utils/bmi'
+
+export type RecipeCategory =
+  | 'desayuno'
+  | 'almuerzo'
+  | 'cena'
+  | 'snack'
+  | 'batido'
+  | 'postre'
+
+export type BmiTarget = BmiClassification['id']
+
 export interface Nutrition {
   calories: number
   protein: number
@@ -12,10 +24,30 @@ export interface Recipe {
   ingredients: string[]
   instructions: string[]
   nutrition?: Nutrition
+  category: RecipeCategory
+  suitableFor: BmiTarget[]
   image: string
   createdAt: string
   updatedAt: string
 }
+
+export const CATEGORY_LABELS: Record<RecipeCategory, string> = {
+  desayuno: 'Desayuno',
+  almuerzo: 'Almuerzo',
+  cena: 'Cena',
+  snack: 'Snack',
+  batido: 'Batido',
+  postre: 'Postre',
+}
+
+export const RECIPE_CATEGORIES: RecipeCategory[] = [
+  'desayuno',
+  'almuerzo',
+  'cena',
+  'snack',
+  'batido',
+  'postre',
+]
 
 const API_BASE = import.meta.env.VITE_API_URL ?? '/api'
 

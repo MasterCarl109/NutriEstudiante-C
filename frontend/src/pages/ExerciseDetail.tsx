@@ -17,6 +17,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import {
   fetchExercise,
   DIFFICULTY_LABELS,
+  GOAL_LABELS,
   type Exercise,
 } from '../services/exercises'
 import { DIFFICULTY_COLORS } from '../utils/colors'
@@ -69,6 +70,11 @@ function ExerciseDetail() {
           </Typography>
           <Box sx={{ mb: 2, display: 'flex', gap: 1 }}>
             <Chip label={exercise.duration} />
+            <Chip
+              label={`Objetivo: ${GOAL_LABELS[exercise.goal]}`}
+              color="secondary"
+              variant="outlined"
+            />
             <Chip
               label={`Dificultad: ${DIFFICULTY_LABELS[exercise.difficulty]}`}
               sx={{

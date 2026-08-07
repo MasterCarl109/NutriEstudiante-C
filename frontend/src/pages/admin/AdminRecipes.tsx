@@ -9,6 +9,7 @@ import {
   DialogTitle,
   Grid,
   IconButton,
+  MenuItem,
   Table,
   TableBody,
   TableCell,
@@ -21,6 +22,13 @@ import AddIcon from '@mui/icons-material/Add'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined'
 import { fetchRecipes, type Recipe } from '../../services/recipes'
+import {
+  CATEGORY_LABELS,
+  RECIPE_CATEGORIES,
+  type BmiTarget,
+  type RecipeCategory,
+} from '../../services/recipes'
+import { BMI_CLASSIFICATIONS } from '../../utils/bmi'
 import {
   createRecipe,
   updateRecipe,
@@ -39,6 +47,8 @@ interface FormState {
   protein: string
   carbs: string
   fat: string
+  category: string
+  suitableFor: BmiTarget[]
   image: string
 }
 
@@ -51,6 +61,8 @@ const EMPTY_FORM: FormState = {
   protein: '',
   carbs: '',
   fat: '',
+  category: 'almuerzo',
+  suitableFor: [],
   image: '',
 }
 
@@ -93,6 +105,8 @@ function AdminRecipes() {
       protein: recipe.nutrition?.protein?.toString() ?? '',
       carbs: recipe.nutrition?.carbs?.toString() ?? '',
       fat: recipe.nutrition?.fat?.toString() ?? '',
+      category: recipe.category ?? 'almuerzo',
+      suitableFor: recipe.suitableFor ?? [],
       image: recipe.image ?? '',
     })
     setError(null)
@@ -119,6 +133,8 @@ function AdminRecipes() {
         carbs: Number(form.carbs) || 0,
         fat: Number(form.fat) || 0,
       },
+      category: form.category as RecipeCategory,
+      suitableFor: form.suitableFor,
       image: form.image,
     }
 
@@ -148,8 +164,10 @@ function AdminRecipes() {
     }
   }
 
-  const set = (field: keyof FormState) => (e: { target: { value: string } }) =>
-    setForm((f) => ({ ...f, [field]: e.target.value }))
+  const set =
+    (field: Exclude<keyof FormState, 'suitableFor'>) =>
+    (e: { target: { value: string } }) =>
+      setForm((f) => ({ ...f, [field]: e.target.value }))
 
   return (
     <Box sx={{ py: 4 }}>
@@ -290,6 +308,42 @@ function AdminRecipes() {
                   value={form.fat}
                   onChange={set('fat')}
                 />
+              </Grid>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <TextField
+                  label="Categoría"
+                  select
+                  fullWidth
+                  value={form.category}
+                  onChange={set('category')}
+                >
+                  {RECIPE_CATEGORIES.map((category) => (
+                    <MenuItem key={category} value={category}>
+                      {CATEGORY_LABELS[category]}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <TextField
+                  label="Recomendada para (IMC)"
+                  select
+                  fullWidth
+                  slotProps={{ select: { multiple: true } }}
+                  value={form.suitableFor}
+                  onChange={(e) =>
+                    setForm((f) => ({
+                      ...f,
+                      suitableFor: e.target.value as unknown as BmiTarget[],
+                    }))
+                  }
+                >
+                  {BMI_CLASSIFICATIONS.map((c) => (
+                    <MenuItem key={c.id} value={c.id}>
+                      {c.label}
+                    </MenuItem>
+                  ))}
+                </TextField>
               </Grid>
               <Grid size={{ xs: 12 }}>
                 <TextField

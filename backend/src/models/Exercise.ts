@@ -26,6 +26,14 @@ const exerciseSchema = new Schema(
       },
       default: "media",
     },
+    goal: {
+      type: String,
+      enum: {
+        values: ["cardio", "fuerza", "movilidad", "resistencia", "equilibrio"],
+        message: "Objetivo inválido",
+      },
+      default: "cardio",
+    },
     instructions: {
       type: [String],
       default: [],

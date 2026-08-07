@@ -5,8 +5,16 @@ import { TipModel } from "../models/Tip.js";
 import type { AuthedRequest } from "../middleware/auth.js";
 
 function pickRecipe(body: Record<string, unknown>) {
-  const { title, description, ingredients, instructions, nutrition, image } =
-    body;
+  const {
+    title,
+    description,
+    ingredients,
+    instructions,
+    nutrition,
+    category,
+    suitableFor,
+    image,
+  } = body;
   return {
     title,
     description,
@@ -24,6 +32,10 @@ function pickRecipe(body: Record<string, unknown>) {
           fat: Number((nutrition as Record<string, unknown>).fat) || 0,
         }
       : undefined,
+    category,
+    suitableFor: Array.isArray(suitableFor)
+      ? suitableFor.map((s) => String(s))
+      : [],
     image: image ?? "",
   };
 }
@@ -69,12 +81,13 @@ export async function deleteRecipe(
 }
 
 function pickExercise(body: Record<string, unknown>) {
-  const { name, description, duration, difficulty, instructions } = body;
+  const { name, description, duration, difficulty, goal, instructions } = body;
   return {
     name,
     description,
     duration,
     difficulty,
+    goal,
     instructions: Array.isArray(instructions)
       ? instructions.map((i) => String(i).trim()).filter(Boolean)
       : [],

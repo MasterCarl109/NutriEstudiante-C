@@ -24,7 +24,10 @@ import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined'
 import {
   fetchExercises,
   DIFFICULTY_LABELS,
+  GOAL_LABELS,
+  GOALS,
   type Exercise,
+  type Goal,
 } from '../../services/exercises'
 import {
   createExercise,
@@ -39,6 +42,7 @@ interface FormState {
   description: string
   duration: string
   difficulty: Exercise['difficulty']
+  goal: Goal
   instructions: string
 }
 
@@ -47,6 +51,7 @@ const EMPTY_FORM: FormState = {
   description: '',
   duration: '',
   difficulty: 'media',
+  goal: 'cardio',
   instructions: '',
 }
 
@@ -85,6 +90,7 @@ function AdminExercises() {
       description: exercise.description,
       duration: exercise.duration,
       difficulty: exercise.difficulty,
+      goal: exercise.goal,
       instructions: exercise.instructions.join('\n'),
     })
     setError(null)
@@ -100,6 +106,7 @@ function AdminExercises() {
       description: form.description,
       duration: form.duration,
       difficulty: form.difficulty,
+      goal: form.goal,
       instructions: toLines(form.instructions),
     }
 
@@ -229,6 +236,21 @@ function AdminExercises() {
                   <MenuItem value="baja">{DIFFICULTY_LABELS.baja}</MenuItem>
                   <MenuItem value="media">{DIFFICULTY_LABELS.media}</MenuItem>
                   <MenuItem value="alta">{DIFFICULTY_LABELS.alta}</MenuItem>
+                </TextField>
+              </Grid>
+              <Grid size={{ xs: 6 }}>
+                <TextField
+                  label="Objetivo"
+                  select
+                  fullWidth
+                  value={form.goal}
+                  onChange={set('goal')}
+                >
+                  {GOALS.map((goal) => (
+                    <MenuItem key={goal} value={goal}>
+                      {GOAL_LABELS[goal]}
+                    </MenuItem>
+                  ))}
                 </TextField>
               </Grid>
               <Grid size={{ xs: 12 }}>

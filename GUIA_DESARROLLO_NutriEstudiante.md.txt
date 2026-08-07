@@ -18,6 +18,35 @@ Fase actual: **En desarrollo (refinamiento)**.
 
 ---
 
+# Plan de trabajo en curso
+
+> Contenido variado + recomendación por IMC + filtros de objetivos. Avances marcados con ✅.
+
+## Backend
+
+- [x] Modelo `Recipe`: campos `category` y `suitableFor`.
+- [x] Modelo `Exercise`: campo `goal`.
+- [x] `adminController`: recoge los nuevos campos (pickRecipe / pickExercise).
+- [x] Seed reescrito: 15 recetas, 12 ejercicios, 8 consejos + flag `--reset`.
+
+## Frontend
+
+- [x] Servicios/tipos actualizados (`Recipe.category`, `Recipe.suitableFor`, `Exercise.goal`).
+- [x] Recetas: sección "Recomendadas para tu IMC" + filtros por categoría.
+- [x] Ejercicios: filtros por objetivo y etiquetas.
+- [x] Dashboard: bloque de recomendaciones según clasificación de IMC.
+- [x] Admin: selects de `category`/`suitableFor` (recetas) y `goal` (ejercicios).
+
+## Verificación
+
+- [x] `bun --cwd backend typecheck` sin errores.
+- [x] `bun --cwd frontend lint` sin errores.
+- [x] `bun --cwd frontend build` correcto.
+- [x] Reseed con flag `--reset` → 15 recetas, 12 ejercicios, 8 consejos (verificado en BD).
+- [x] Nota: `bun run seed --reset` no reenvía el flag (bun lo trata como suyo). Usar `bun src/scripts/seed.ts --reset` (o `SEED_RESET=true bun run seed`).
+
+---
+
 # FASE 0: Preparación del Entorno
 
 ## Paso 0.1: Instalar herramientas base

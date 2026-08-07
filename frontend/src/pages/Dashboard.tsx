@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   Alert,
@@ -12,12 +13,35 @@ import {
 import { useAuth } from '../context/AuthContext'
 import { BMI_CLASSIFICATIONS, calculateBMI, classifyBMI } from '../utils/bmi'
 import { BMI_COLORS } from '../utils/colors'
+import {
+  CATEGORY_LABELS,
+  fetchRecipes,
+  type Recipe,
+} from '../services/recipes'
 
 function Dashboard() {
   const { user } = useAuth()
+  const [recipes, setRecipes] = useState<Recipe[]>([])
+
+  useEffect(() => {
+    fetchRecipes().then(setRecipes).catch(() => undefined)
+  }, [])
 
   const weight = user?.weight
   const height = user?.height
+
+  const bmiId = useMemo(() => {
+    if (!weight || !height) return null
+    return classifyBMI(calculateBMI(weight, height)).id
+  }, [weight, height])
+
+  const recommended = useMemo(
+    () =>
+      bmiId
+        ? recipes.filter((r) => r.suitableFor.includes(bmiId)).slice(0, 3)
+        : [],
+    [recipes, bmiId],
+  )
 
   if (!weight || !height) {
     return (
@@ -87,6 +111,44 @@ function Dashboard() {
           </Typography>
         </CardContent>
       </Card>
+
+      {bmiId && recommended.length > 0 && (
+        <Card sx={{ mt: 3 }}>
+          <CardContent sx={{ p: 3 }}>
+            <Typography variant="h6" sx={{ mb: 2 }}>
+              Recomendaciones para ti
+            </Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              {recommended.map((recipe) => (
+                <Box
+                  key={recipe._id}
+                  component={Link}
+                  to="/recipes"
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    textDecoration: 'none',
+                    p: 1.5,
+                    borderRadius: 2,
+                    '&:hover': { bgcolor: 'action.hover' },
+                  }}
+                >
+                  <Typography sx={{ fontWeight: 600 }}>
+                    {recipe.title}
+                  </Typography>
+                  <Chip
+                    label={CATEGORY_LABELS[recipe.category]}
+                    size="small"
+                    color="secondary"
+                    variant="outlined"
+                  />
+                </Box>
+              ))}
+            </Box>
+          </CardContent>
+        </Card>
+      )}
     </Box>
   )
 }

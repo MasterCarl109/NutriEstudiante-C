@@ -1,9 +1,12 @@
+export type Goal = 'cardio' | 'fuerza' | 'movilidad' | 'resistencia' | 'equilibrio'
+
 export interface Exercise {
   _id: string
   name: string
   description: string
   duration: string
   difficulty: 'baja' | 'media' | 'alta'
+  goal: Goal
   instructions: string[]
   createdAt: string
   updatedAt: string
@@ -38,3 +41,13 @@ export const DIFFICULTY_LABELS: Record<Exercise['difficulty'], string> = {
   media: 'Media',
   alta: 'Alta',
 }
+
+export const GOAL_LABELS: Record<Goal, string> = {
+  cardio: 'Cardio',
+  fuerza: 'Fuerza',
+  movilidad: 'Movilidad',
+  resistencia: 'Resistencia',
+  equilibrio: 'Equilibrio',
+}
+
+export const GOALS: Goal[] = ['cardio', 'fuerza', 'movilidad', 'resistencia', 'equilibrio']

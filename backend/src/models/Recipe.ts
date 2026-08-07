@@ -27,6 +27,22 @@ const recipeSchema = new Schema(
       carbs: { type: Number, min: 0 },
       fat: { type: Number, min: 0 },
     },
+    category: {
+      type: String,
+      enum: {
+        values: ["desayuno", "almuerzo", "cena", "snack", "batido", "postre"],
+        message: "Categoría inválida",
+      },
+      default: "almuerzo",
+    },
+    suitableFor: {
+      type: [String],
+      enum: {
+        values: ["underweight", "normal", "overweight", "obesity"],
+        message: "Recomendación inválida",
+      },
+      default: [],
+    },
     image: {
       type: String,
       trim: true,
