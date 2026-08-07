@@ -1,0 +1,210 @@
+# NutriEstudiante – Guía de Desarrollo (Paso a Paso)
+
+> Contexto general del proyecto: Beta, ~3 meses, desarrollo individual, baja concurrencia.
+> Principios: KISS, YAGNI, DRY.
+> Stack: React + TypeScript + Vite + MUI | Express + TypeScript | MongoDB + Mongoose | Bun
+
+---
+
+# Estado del proyecto
+
+Fase actual: **En desarrollo (refinamiento)**.
+
+- ✅ Entorno configurado (Bun, estructura de carpetas, scripts).
+- ✅ Backend funcional (auth JWT, perfil, IMC, tracking, recetas, ejercicios, consejos, admin).
+- ✅ Frontend funcional (todas las páginas, navegación responsive, panel admin).
+- ⬜ Pruebas manuales finales y pulido de UX.
+- ⬜ Build de producción y despliegue.
+
+---
+
+# FASE 0: Preparación del Entorno
+
+## Paso 0.1: Instalar herramientas base
+
+### Subpaso 0.1.1: Instalar Bun
+- Visitar https://bun.sh
+- Ejecutar el comando de instalación según tu sistema operativo
+- Verificar instalación:
+  ```bash
+  bun --version
+  ```
+
+### Subpaso 0.1.2: Instalar Node.js y MongoDB
+- Node.js LTS (se usa para herramientas complementarias si es necesario; Bun ejecuta el código).
+- MongoDB local (`mongodb://127.0.0.1:27017/nutriestudiante`) o una base remota (Atlas).
+
+## Paso 0.2: Estructura del repositorio
+
+```
+NutriEstudiante/
+├── backend/     → API REST (Express + TypeScript + Mongoose)
+├── frontend/    → SPA (React + TypeScript + Vite + MUI)
+├── assets/      → recursos estáticos del proyecto
+├── package.json → scripts raíz (concurrently para dev)
+└── *.md.txt     → planificación y esta guía
+```
+
+## Paso 0.3: Scripts disponibles
+
+Desde la raíz:
+
+```bash
+bun install                 # instala dependencias del monorepo
+bun run dev                 # levanta backend y frontend a la vez
+bun run dev:backend         # solo backend (http://localhost:4000)
+bun run dev:frontend        # solo frontend (http://localhost:5173)
+```
+
+Dentro de `backend/`:
+
+```bash
+bun run seed                # crea el usuario admin + contenido inicial
+bun run typecheck           # verifica tipos con tsc
+```
+
+Dentro de `frontend/`:
+
+```bash
+bun run lint                # oxlint
+bun run build               # tsc -b + vite build
+```
+
+---
+
+# FASE 1: Backend
+
+## Paso 1.1: Configuración
+
+- `src/config/index.ts` lee variables de entorno (`PORT`, `MONGODB_URI`, `JWT_SECRET`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`).
+- `src/config/db.ts` conecta a MongoDB con Mongoose.
+- `src/index.ts` monta Express, Helmet, CORS y sirve `/uploads` como estático.
+- Copiar `.env.example` a `.env` y ajustar los valores.
+
+## Paso 1.2: Modelos (Mongoose)
+
+- `User` → nombre, correo, contraseña (bcryptjs), edad, peso, estatura, sexo, rol (`user` | `admin`). La contraseña nunca se serializa a JSON.
+- `WeightRecord` → registro de seguimiento (peso + fecha por usuario).
+- `Recipe` → título, descripción, ingredientes, instrucciones, información nutricional e imagen.
+- `Exercise` → nombre, descripción, duración, dificultad (`baja | media | alta`) e instrucciones.
+- `Tip` → título y contenido.
+
+> El IMC **no se almacena**: se deriva del peso y la estatura (`backend/src/utils/bmi.ts`).
+
+## Paso 1.3: Autenticación y seguridad
+
+- Registro, login y cambio de contraseña (`authController.ts`).
+- Contraseñas cifradas con bcryptjs (rondas = 10).
+- JWT en cabecera `Authorization: Bearer <token>`.
+- Middlewares:
+  - `requireAuth` → protege rutas autenticadas.
+  - `requireAdmin` → protege rutas del panel admin.
+  - `validateImage` → valida rutas `/uploads/*`.
+
+## Paso 1.4: Rutas
+
+| Recurso | Ruta | Descripción |
+|---|---|---|
+| Auth | `/api/auth` | Registro, login, cambio de contraseña |
+| Perfil | `/api/profile` | Consultar y modificar datos personales |
+| IMC | `/api/bmi` | Cálculo derivado |
+| Tracking | `/api/tracking` | Registrar, listar y eliminar pesos |
+| Recetas | `/api/recipes` | Consultar recetas y detalle |
+| Ejercicios | `/api/exercises` | Consultar ejercicios y detalle |
+| Consejos | `/api/tips` | Consultar consejos |
+| Admin | `/api/admin` | CRUD de recetas, ejercicios y consejos |
+
+## Paso 1.5: Seed de datos
+
+`src/scripts/seed.ts`:
+- Crea (o actualiza) el **único** usuario administrador a partir de `ADMIN_EMAIL` / `ADMIN_PASSWORD`.
+- Inserta contenido inicial si la colección está vacía (recetas, ejercicios y consejos).
+
+> No existe forma de registrar usuarios administradores desde la app. El rol se asigna únicamente vía seed.
+
+---
+
+# FASE 2: Frontend
+
+## Paso 2.1: Scaffold y tema
+
+- Vite + React + TypeScript.
+- `src/theme.ts` → MUI ThemeProvider: verde como primario, fondo claro y bordes redondeados.
+- `src/main.tsx` → ThemeProvider + CssBaseline.
+
+## Paso 2.2: Estado y servicios
+
+- `src/context/AuthContext.tsx` → estado global de sesión (login, register, logout, fetch de usuario).
+- `src/services/` → capa de API por dominio (`auth`, `recipes`, `exercises`, `tips`, `tracking`, `admin`).
+- `src/utils/` → lógica pura (`bmi.ts`, `image.ts`, `colors.ts`).
+
+## Paso 2.3: Navegación
+
+- `src/components/NavBar.tsx` → barra superior:
+  - Usuario autenticado: enlaces Mi estado / Mi progreso / Recetas / Ejercicios / Consejos + menú Admin + menú de perfil (Mi perfil, Cerrar sesión).
+  - Visitante: botones Iniciar sesión / Registrarse (ocultos en `/login` y `/register` para no duplicar el formulario).
+  - Responsive: drawer deslizable en móvil; la ruta activa se resalta.
+- `src/components/ProtectedRoute.tsx` y `AdminRoute.tsx` → control de acceso por ruta.
+- `src/App.tsx` → definición de rutas con lazy loading.
+
+## Paso 2.4: Páginas
+
+- **Home** → landing simple con CTA según sesión.
+- **Login / Register** → formularios centrados en tarjeta.
+- **Dashboard** → IMC del usuario + clasificación (Bajo peso, Normal, Sobrepeso, Obesidad) y barras de referencia.
+- **Profile** → modificar datos personales y cambiar contraseña.
+- **Tracking** → registrar peso/fecha, gráfico de evolución (Recharts) y tabla histórica.
+- **Recipes / RecipeDetail** → tarjetas con imagen y detalle (ingredientes, preparación, nutrición).
+- **Exercises / ExerciseDetail** → tarjetas con duración/dificultad y detalle (instrucciones).
+- **Tips** → tarjetas de consejos.
+- **Admin** → CRUD en tablas + diálogos (AdminRecipes, AdminExercises, AdminTips).
+
+## Paso 2.5: Convenciones del frontend
+
+- Encabezados de página con el componente compartido `PageHeader` (título + subtítulo + acción opcional).
+- Colores de clasificación IMC y dificultad centralizados en `utils/colors.ts` (evitar hex hardcodeados duplicados).
+- Tarjetas (`Card`) con padding uniforme; estados de carga con `CircularProgress`.
+- Español en toda la interfaz; textos orientados a estudiantes.
+
+---
+
+# FASE 3: Integración
+
+## Paso 3.1: Variables de entorno
+
+- Backend: `backend/.env` (`PORT`, `MONGODB_URI`, `JWT_SECRET`, `CLIENT_ORIGIN`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`).
+- Frontend: `VITE_API_URL` (por defecto `/api`; el dev server de Vite redirige `/api` a `http://localhost:4000`).
+
+## Paso 3.2: Subida de imágenes
+
+- Las imágenes se copian a `backend/uploads/` y se referencian como `/uploads/archivo.jpg`.
+- El campo imagen se valida en frontend y backend (extensión y ruta).
+
+## Paso 3.3: Pruebas manuales
+
+Checklist de verificación:
+- [ ] Registro, login, cierre de sesión y cambio de contraseña.
+- [ ] Guardar peso/estatura y ver el IMC correcto en Dashboard.
+- [ ] Registrar pesos en Tracking y validar gráfico y tabla.
+- [ ] Navegar por recetas, ejercicios y consejos (listado y detalle).
+- [ ] CRUD de contenido con el usuario admin.
+- [ ] Un usuario normal no puede acceder a `/admin/*`.
+- [ ] Navegación responsive (drawer en móvil) y ruta activa resaltada.
+
+---
+
+# FASE 4: Build y Despliegue
+
+- [ ] `bun --cwd frontend lint` → sin errores.
+- [ ] `bun --cwd backend typecheck` y `bun --cwd frontend build` → compilan sin errores.
+- [ ] Servir `frontend/dist` desde el backend (o CDN) y configurar `CLIENT_ORIGIN`.
+- [ ] Establecer un `JWT_SECRET` fuerte en producción.
+- [ ] Crear el usuario admin con `bun run seed` en el entorno de producción.
+
+---
+
+# Buenas prácticas
+
+- **KISS / YAGNI**: no agregar funcionalidades sin un requerimiento real.
+- **DRY**: colores y lógica compartida viven en `utils/` y `components/`.
+- **Seguridad**: no subir `.env` al repositorio, no exponer secretos, validar datos en frontend y backend.

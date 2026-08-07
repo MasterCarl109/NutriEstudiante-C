@@ -1,0 +1,468 @@
+# NutriEstudiante
+
+> Documento de planificación del proyecto
+
+---
+
+# 1. Información General
+
+## Nombre
+
+NutriEstudiante *(Nombre provisional)*
+
+## Estado
+
+Beta
+
+## Tipo de proyecto
+
+Aplicación web.
+
+## Objetivo
+
+Desarrollar una aplicación web sencilla que permita a los estudiantes conocer su estado nutricional mediante el cálculo del Índice de Masa Corporal (IMC), acceder a recomendaciones básicas de alimentación saludable, ejercicios y consejos, además de registrar su progreso de forma simple.
+
+El proyecto busca ser un producto funcional, estable y fácil de utilizar, evitando complejidad innecesaria.
+
+---
+
+# 2. Alcance
+
+El sistema está pensado para un entorno pequeño y controlado.
+
+Características del proyecto:
+
+- Tiempo de vida aproximado: 3 meses.
+- Producto Beta.
+- Aproximadamente 12 usuarios simultáneos.
+- Bajo volumen de datos.
+- Desarrollo orientado al principio KISS.
+- Escalabilidad no prioritaria.
+- Mantenimiento realizado por el desarrollador.
+
+El objetivo no es construir una plataforma empresarial sino una aplicación funcional para validar la propuesta.
+
+---
+
+# 3. Filosofía
+
+El proyecto seguirá el principio:
+
+> KISS (Keep It Simple, Stupid)
+
+Cada funcionalidad deberá justificar su existencia.
+
+No se implementarán características únicamente pensando en futuras necesidades.
+
+Las funcionalidades futuras deberán agregarse únicamente cuando exista un requerimiento real.
+
+---
+
+# 4. Público Objetivo
+
+Estudiantes.
+
+No está orientado a:
+
+- Nutricionistas.
+- Clínicas.
+- Hospitales.
+- Empresas.
+- Organizaciones.
+
+La experiencia debe ser amigable, sencilla y moderna.
+
+---
+
+# 5. Objetivos
+
+## Objetivo General
+
+Brindar una herramienta sencilla para promover hábitos alimenticios saludables mediante recomendaciones personalizadas y seguimiento básico.
+
+## Objetivos Específicos
+
+- Permitir el registro de usuarios.
+- Permitir el inicio de sesión.
+- Calcular automáticamente el IMC.
+- Mostrar la clasificación nutricional.
+- Mostrar recetas saludables.
+- Mostrar ejercicios recomendados.
+- Mostrar consejos de alimentación.
+- Registrar el progreso del usuario.
+- Permitir modificar la información personal.
+
+---
+
+# 6. Funcionalidades
+
+## Autenticación
+
+El usuario podrá:
+
+- Registrarse.
+- Iniciar sesión.
+- Cerrar sesión.
+- Cambiar su contraseña.
+
+No se implementará recuperación mediante correo electrónico durante esta versión.
+
+---
+
+## Perfil
+
+Permitirá modificar:
+
+- Nombre.
+- Edad.
+- Peso.
+- Estatura.
+- Sexo.
+- Información personal.
+
+---
+
+## Cálculo del IMC
+
+El sistema calculará automáticamente el IMC.
+
+El IMC no será almacenado como dato principal.
+
+Se almacenarán únicamente los datos necesarios para recalcularlo.
+
+Ejemplo:
+
+- Peso.
+- Estatura.
+- Fecha del registro.
+
+El IMC será un dato derivado.
+
+---
+
+## Clasificación
+
+Según el IMC el sistema clasificará al usuario.
+
+Ejemplo:
+
+- Bajo peso.
+- Peso normal.
+- Sobrepeso.
+- Obesidad.
+
+Esta clasificación servirá únicamente como referencia para mostrar recomendaciones.
+
+---
+
+## Recetas
+
+El usuario podrá:
+
+- Consultar recetas.
+- Ver ingredientes.
+- Ver preparación.
+- Consultar información nutricional.
+
+Inicialmente el contenido será administrado únicamente por el desarrollador.
+
+---
+
+## Ejercicios
+
+El usuario podrá:
+
+- Consultar ejercicios.
+- Ver duración.
+- Ver dificultad.
+- Leer instrucciones.
+
+---
+
+## Consejos
+
+El usuario podrá consultar recomendaciones relacionadas con hábitos saludables.
+
+---
+
+## Seguimiento
+
+Permitirá registrar:
+
+- Peso.
+- Fecha.
+
+Con esta información el sistema podrá mostrar la evolución del usuario.
+
+El seguimiento será simple.
+
+No se registrará información médica compleja.
+
+---
+
+# 7. Funcionalidades descartadas
+
+No forman parte del alcance inicial.
+
+- Gestión de roles.
+- Gestión de permisos.
+- Recuperación por correo.
+- Verificación de correo.
+- Chat.
+- Mensajería.
+- Comentarios.
+- Calificaciones.
+- Redes sociales.
+- Notificaciones Push.
+- Reportes complejos.
+- Exportación PDF.
+- Exportación Excel.
+- Integración con dispositivos externos.
+- Inteligencia Artificial.
+- Gamificación.
+
+Estas funcionalidades podrán evaluarse en futuras versiones.
+
+> Nota: inicialmente se descartó el panel de administración. Durante el desarrollo se incorporó un panel de administración **mínimo** restringido a un único usuario administrador, cuyo único propósito es gestionar el contenido: recetas, ejercicios y consejos. La creación de más usuarios administradores no forma parte del alcance; el rol se asigna directamente en la base de datos.
+
+---
+
+# 8. Tecnologías
+
+## Frontend
+
+- React 18+
+- TypeScript
+- Vite
+- Material Design (MUI)
+
+## Backend
+
+- Node.js
+- Express
+- TypeScript
+
+## Base de datos
+
+- MongoDB
+- Mongoose
+
+## Gestor de paquetes
+
+- Bun
+
+### Justificación de Bun sobre npm
+
+- Mayor velocidad de instalación y ejecución.
+- Gestión de dependencias más estricta y segura.
+- Compatibilidad directa con el ecosistema Node.
+- Menor superficie de ataque frente a vulnerabilidades recientes detectadas en npm.
+
+---
+
+# 9. Arquitectura
+
+Arquitectura de tres capas.
+
+Frontend
+
+↓
+
+API REST
+
+↓
+
+MongoDB
+
+Se evitarán arquitecturas complejas debido al tamaño del proyecto.
+
+---
+
+# 10. Organización del Frontend
+
+Se utilizará una arquitectura basada en funcionalidades (Feature-Based Architecture).
+
+No se implementará MVC.
+
+No se implementará MVVM de forma estricta.
+
+La lógica de negocio se organizará mediante:
+
+- Componentes.
+- Hooks personalizados.
+- Servicios.
+
+La organización buscará seguir las prácticas recomendadas por React.
+
+---
+
+# 11. Diseño
+
+La interfaz deberá transmitir:
+
+- Cercanía.
+- Simplicidad.
+- Modernidad.
+- Bienestar.
+- Motivación.
+
+Se evitará una apariencia excesivamente empresarial.
+
+La experiencia estará orientada a estudiantes.
+
+---
+
+# 12. Persistencia
+
+La base de datos almacenará únicamente información relevante.
+
+No se almacenarán datos que puedan calcularse nuevamente.
+
+Ejemplo:
+
+Se almacenará:
+
+- Peso.
+- Estatura.
+
+No será necesario almacenar:
+
+- IMC.
+
+El sistema recalculará el IMC cuando sea necesario.
+
+---
+
+# 13. Escalabilidad
+
+La escalabilidad no es un objetivo principal.
+
+Sin embargo, la arquitectura permitirá incorporar nuevas funcionalidades sin modificar significativamente la estructura existente.
+
+Ya implementados (contenido administrado desde el panel mínimo):
+
+- CRUD de recetas.
+- CRUD de ejercicios.
+- CRUD de consejos.
+
+Ejemplos futuros:
+
+- Estadísticas.
+- Metas.
+- Recordatorios.
+
+---
+
+# 14. Seguridad
+
+Se implementarán medidas básicas.
+
+- Contraseñas cifradas (bcryptjs).
+- Validación de datos en frontend y backend.
+- Autenticación mediante JWT.
+- Protección básica de rutas.
+- Uso de Bun como gestor de paquetes para reducir riesgos en la cadena de suministro.
+- Archivo `.env` para variables de entorno.
+- Helmet para cabeceras HTTP seguras.
+- CORS configurado adecuadamente.
+
+No se implementarán mecanismos avanzados debido al alcance del proyecto.
+
+---
+
+# 15. Restricciones
+
+- Tiempo limitado.
+- Desarrollo individual.
+- Baja concurrencia.
+- Presupuesto reducido.
+- Proyecto Beta.
+
+Estas restricciones tienen prioridad sobre la incorporación de nuevas funcionalidades.
+
+---
+
+# 16. Principios de desarrollo
+
+Durante el desarrollo se respetarán los siguientes principios.
+
+## KISS
+
+Mantener la solución lo más simple posible.
+
+## YAGNI
+
+No desarrollar funcionalidades que aún no sean necesarias.
+
+## DRY
+
+Evitar duplicación de código.
+
+## SOLID
+
+Aplicar únicamente cuando aporte claridad.
+
+No forzar patrones de diseño.
+
+---
+
+# 17. Decisiones arquitectónicas
+
+## React
+
+Seleccionado por su rapidez de desarrollo y amplio ecosistema.
+
+## MongoDB
+
+Seleccionado por su flexibilidad y facilidad para este tipo de proyecto.
+
+## Panel administrativo mínimo
+
+Existe un único usuario administrador cuyo único propósito es gestionar el contenido de la aplicación: recetas, ejercicios y consejos.
+
+El rol se asigna directamente en la base de datos (mediante el script de seed) y no existe forma de crear usuarios administradores desde la aplicación.
+
+Si el proyecto evoluciona, podrá ampliarse el panel sin modificar significativamente la arquitectura.
+
+## Sin MVC
+
+React ya representa la capa de presentación.
+
+Implementar MVC añadiría complejidad innecesaria.
+
+## Sin MVVM
+
+React no fue diseñado alrededor de ViewModels.
+
+Se utilizará la arquitectura recomendada por el ecosistema React basada en componentes, hooks y separación por funcionalidades.
+
+---
+
+# 18. Estado actual
+
+Fase:
+
+En desarrollo (refinamiento).
+
+El backend y el frontend están implementados y funcionales:
+
+**Backend (Express + TypeScript + MongoDB)**
+
+- Autenticación con JWT y contraseñas cifradas con bcryptjs.
+- Modelos: User, WeightRecord, Recipe, Exercise, Tip.
+- Rutas: auth, profile, bmi, tracking, recipes, exercises, tips, admin.
+- Middlewares: `requireAuth`, `requireAdmin` y validación de imágenes.
+- Script de seed que crea el usuario administrador y el contenido inicial.
+- Helmet, CORS y variables de entorno mediante `.env`.
+
+**Frontend (React + TypeScript + Vite + MUI)**
+
+- Páginas: Home, Login, Register, Dashboard (IMC), Profile, Tracking, Recipes, RecipeDetail, Exercises, ExerciseDetail, Tips.
+- Panel admin: AdminRecipes, AdminExercises, AdminTips.
+- Barra de navegación responsive (drawer en móvil) con ruta activa.
+- Gestión de sesión mediante `AuthContext` y rutas protegidas.
+- Componentes compartidos (`NavBar`, `PageHeader`) y colores centralizados (`utils/colors.ts`).
+
+Las decisiones técnicas pueden ajustarse si durante el desarrollo aparece una alternativa objetivamente mejor.
+
+Todas las decisiones deberán estar justificadas por los requisitos del proyecto y no por preferencias personales.

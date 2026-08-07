@@ -1,0 +1,13 @@
+{
+  "name": "nutriestudiante",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"bun run dev:backend\" \"bun run dev:frontend\"",
+    "dev:backend": "bun --cwd backend dev",
+    "dev:frontend": "bun --cwd frontend dev"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.4"
+  }
+}
