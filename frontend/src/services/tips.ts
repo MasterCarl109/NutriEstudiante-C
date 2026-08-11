@@ -1,3 +1,5 @@
+import { sessionHeaders } from './token'
+
 export interface Tip {
   _id: string
   title: string
@@ -9,9 +11,9 @@ export interface Tip {
 const API_BASE = import.meta.env.VITE_API_URL ?? '/api'
 
 async function request<T>(path: string): Promise<T> {
-  const token = localStorage.getItem('nutriestudiante_token')
   const res = await fetch(`${API_BASE}${path}`, {
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    credentials: 'include',
+    headers: sessionHeaders(),
   })
   if (!res.ok) {
     const body = (await res.json().catch(() => null)) as { error?: string } | null

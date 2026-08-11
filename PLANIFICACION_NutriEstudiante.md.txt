@@ -359,7 +359,7 @@ Se implementarán medidas básicas.
 
 - Contraseñas cifradas (bcryptjs).
 - Validación de datos en frontend y backend.
-- Autenticación mediante JWT.
+- Autenticación mediante sesiones opacas (token aleatorio con `crypto.randomBytes` almacenado hasheado en la base de datos).
 - Protección básica de rutas.
 - Uso de Bun como gestor de paquetes para reducir riesgos en la cadena de suministro.
 - Archivo `.env` para variables de entorno.
@@ -448,8 +448,8 @@ El backend y el frontend están implementados y funcionales:
 
 **Backend (Express + TypeScript + MongoDB)**
 
-- Autenticación con JWT y contraseñas cifradas con bcryptjs.
-- Modelos: User, WeightRecord, Recipe, Exercise, Tip.
+- Autenticación con sesiones opacas (token aleatorio + hash en BD) y contraseñas cifradas con bcryptjs.
+- Modelos: User, Session, WeightRecord, Recipe, Exercise, Tip.
 - Rutas: auth, profile, bmi, tracking, recipes, exercises, tips, admin.
 - Middlewares: `requireAuth`, `requireAdmin` y validación de imágenes.
 - Script de seed que crea el usuario administrador y el contenido inicial.

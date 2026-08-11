@@ -57,13 +57,18 @@ function Tracking() {
 
   const chartData = useMemo(
     () =>
-      records.map((r) => ({
-        date: new Date(r.date).toLocaleDateString('es', {
-          day: '2-digit',
-          month: 'short',
-        }),
-        weight: r.weight,
-      })),
+      [...records]
+        .sort(
+          (a, b) =>
+            new Date(a.date).getTime() - new Date(b.date).getTime(),
+        )
+        .map((r) => ({
+          date: new Date(r.date).toLocaleDateString('es', {
+            day: '2-digit',
+            month: 'short',
+          }),
+          weight: r.weight,
+        })),
     [records],
   )
 

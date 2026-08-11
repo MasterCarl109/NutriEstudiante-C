@@ -11,7 +11,7 @@
 Fase actual: **En desarrollo (refinamiento)**.
 
 - ✅ Entorno configurado (Bun, estructura de carpetas, scripts).
-- ✅ Backend funcional (auth JWT, perfil, IMC, tracking, recetas, ejercicios, consejos, admin).
+- ✅ Backend funcional (auth por sesiones opacas, perfil, IMC, tracking, recetas, ejercicios, consejos, admin).
 - ✅ Frontend funcional (todas las páginas, navegación responsive, panel admin).
 - ⬜ Pruebas manuales finales y pulido de UX.
 - ⬜ Build de producción y despliegue.
@@ -105,7 +105,7 @@ bun run build               # tsc -b + vite build
 
 ## Paso 1.1: Configuración
 
-- `src/config/index.ts` lee variables de entorno (`PORT`, `MONGODB_URI`, `JWT_SECRET`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`).
+- `src/config/index.ts` lee variables de entorno (`PORT`, `MONGODB_URI`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`).
 - `src/config/db.ts` conecta a MongoDB con Mongoose.
 - `src/index.ts` monta Express, Helmet, CORS y sirve `/uploads` como estático.
 - Copiar `.env.example` a `.env` y ajustar los valores.
@@ -113,6 +113,7 @@ bun run build               # tsc -b + vite build
 ## Paso 1.2: Modelos (Mongoose)
 
 - `User` → nombre, correo, contraseña (bcryptjs), edad, peso, estatura, sexo, rol (`user` | `admin`). La contraseña nunca se serializa a JSON.
+- `Session` → sesión opaca por usuario: `tokenHash` (SHA-256 del token completo), `userId` y `expiresAt` (índice TTL que la borra al vencer).
 - `WeightRecord` → registro de seguimiento (peso + fecha por usuario).
 - `Recipe` → título, descripción, ingredientes, instrucciones, información nutricional e imagen.
 - `Exercise` → nombre, descripción, duración, dificultad (`baja | media | alta`) e instrucciones.
@@ -124,7 +125,7 @@ bun run build               # tsc -b + vite build
 
 - Registro, login y cambio de contraseña (`authController.ts`).
 - Contraseñas cifradas con bcryptjs (rondas = 10).
-- JWT en cabecera `Authorization: Bearer <token>`.
+- Sesiones opacas: token aleatorio (`crypto.randomBytes`) partido en dos fragmentos: uno en cookie `HttpOnly; SameSite=Strict` y el otro en cabecera `X-Session-Part`. El servidor los combina, calcula su hash (SHA-256) y lo busca en la colección `Session` (revocable, expira en 7 días con índice TTL).
 - Middlewares:
   - `requireAuth` → protege rutas autenticadas.
   - `requireAdmin` → protege rutas del panel admin.
@@ -201,7 +202,7 @@ bun run build               # tsc -b + vite build
 
 ## Paso 3.1: Variables de entorno
 
-- Backend: `backend/.env` (`PORT`, `MONGODB_URI`, `JWT_SECRET`, `CLIENT_ORIGIN`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`).
+- Backend: `backend/.env` (`PORT`, `MONGODB_URI`, `CLIENT_ORIGIN`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `NODE_ENV`).
 - Frontend: `VITE_API_URL` (por defecto `/api`; el dev server de Vite redirige `/api` a `http://localhost:4000`).
 
 ## Paso 3.2: Subida de imágenes
@@ -227,7 +228,7 @@ Checklist de verificación:
 - [ ] `bun --cwd frontend lint` → sin errores.
 - [ ] `bun --cwd backend typecheck` y `bun --cwd frontend build` → compilan sin errores.
 - [ ] Servir `frontend/dist` desde el backend (o CDN) y configurar `CLIENT_ORIGIN`.
-- [ ] Establecer un `JWT_SECRET` fuerte en producción.
+- [ ] Configurar `NODE_ENV=production` para activar cookies `Secure`.
 - [ ] Crear el usuario admin con `bun run seed` en el entorno de producción.
 
 ---

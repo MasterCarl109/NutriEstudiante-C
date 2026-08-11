@@ -1,6 +1,7 @@
 import type { Recipe } from './recipes'
 import type { Exercise } from './exercises'
 import type { Tip } from './tips'
+import { sessionHeaders } from './token'
 
 export type RecipeInput = Omit<Recipe, '_id' | 'createdAt' | 'updatedAt'>
 export type ExerciseInput = Omit<Exercise, '_id' | 'createdAt' | 'updatedAt'>
@@ -9,12 +10,12 @@ export type TipInput = Omit<Tip, '_id' | 'createdAt' | 'updatedAt'>
 const API_BASE = import.meta.env.VITE_API_URL ?? '/api'
 
 async function request<T>(path: string, method: string, body?: unknown): Promise<T> {
-  const token = localStorage.getItem('nutriestudiante_token')
   const res = await fetch(`${API_BASE}${path}`, {
     method,
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      ...(token && { Authorization: `Bearer ${token}` }),
+      ...sessionHeaders(),
     },
     body: body === undefined ? undefined : JSON.stringify(body),
   })

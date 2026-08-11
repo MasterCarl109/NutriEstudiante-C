@@ -1,3 +1,5 @@
+import { sessionPartStore, sessionHeaders } from './token'
+
 export interface User {
   _id: string
   name: string
@@ -12,26 +14,19 @@ export interface User {
 }
 
 export interface AuthResponse {
-  token: string
   user: User
+  sessionPart: string
 }
 
 const API_BASE = import.meta.env.VITE_API_URL ?? '/api'
 
-const TOKEN_KEY = 'nutriestudiante_token'
-
-export const tokenStore = {
-  get: () => localStorage.getItem(TOKEN_KEY),
-  set: (token: string) => localStorage.setItem(TOKEN_KEY, token),
-  clear: () => localStorage.removeItem(TOKEN_KEY),
-}
-
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
     ...options,
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      ...(tokenStore.get() && { Authorization: `Bearer ${tokenStore.get()}` }),
+      ...sessionHeaders(),
       ...options.headers,
     },
   })
@@ -44,22 +39,26 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   return res.json() as Promise<T>
 }
 
-export async function login(email: string, password: string): Promise<AuthResponse> {
-  return request<AuthResponse>('/auth/login', {
+export async function login(email: string, password: string): Promise<User> {
+  const res = await request<AuthResponse>('/auth/login', {
     method: 'POST',
     body: JSON.stringify({ email, password }),
   })
+  sessionPartStore.set(res.sessionPart)
+  return res.user
 }
 
 export async function register(
   name: string,
   email: string,
   password: string,
-): Promise<AuthResponse> {
-  return request<AuthResponse>('/auth/register', {
+): Promise<User> {
+  const res = await request<AuthResponse>('/auth/register', {
     method: 'POST',
     body: JSON.stringify({ name, email, password }),
   })
+  sessionPartStore.set(res.sessionPart)
+  return res.user
 }
 
 export async function fetchMe(): Promise<User> {
@@ -92,4 +91,11 @@ export async function changePassword(
     body: JSON.stringify({ currentPassword, newPassword }),
   })
   return res.message
+}
+
+export async function logout(): Promise<void> {
+  await request<{ message: string }>('/auth/logout', { method: 'POST' }).catch(
+    () => {},
+  )
+  sessionPartStore.clear()
 }

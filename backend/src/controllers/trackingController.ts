@@ -34,7 +34,7 @@ export async function listRecords(
   res: Response
 ): Promise<void> {
   const records = await WeightRecordModel.find({ user: req.userId }).sort({
-    date: 1,
+    date: -1,
   });
   res.json({ records });
 }

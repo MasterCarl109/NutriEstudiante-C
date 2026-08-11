@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
-import { login as apiLogin, register as apiRegister, fetchMe, tokenStore, type User } from '../services/auth'
+import { login as apiLogin, register as apiRegister, fetchMe, logout as apiLogout, type User } from '../services/auth'
+import { sessionPartStore, clearLegacyToken } from '../services/token'
 
 interface AuthContextValue {
   user: User | null
@@ -17,30 +18,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!tokenStore.get()) {
-      setLoading(false)
-      return
-    }
+    clearLegacyToken()
     fetchMe()
       .then(setUser)
-      .catch(() => tokenStore.clear())
+      .catch(() => {
+        sessionPartStore.clear()
+        setUser(null)
+      })
       .finally(() => setLoading(false))
   }, [])
 
   const login = async (email: string, password: string) => {
-    const res = await apiLogin(email, password)
-    tokenStore.set(res.token)
-    setUser(res.user)
+    setUser(await apiLogin(email, password))
   }
 
   const register = async (name: string, email: string, password: string) => {
-    const res = await apiRegister(name, email, password)
-    tokenStore.set(res.token)
-    setUser(res.user)
+    setUser(await apiRegister(name, email, password))
   }
 
   const logout = () => {
-    tokenStore.clear()
+    apiLogout().catch(() => {})
     setUser(null)
   }
 
