@@ -1,3 +1,5 @@
+import path from "node:path";
+import { existsSync } from "node:fs";
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
@@ -13,6 +15,9 @@ import exerciseRoutes from "./routes/exerciseRoutes.js";
 import tipRoutes from "./routes/tipRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 
+const DIST_DIR = path.resolve(import.meta.dirname, "../../frontend/dist");
+const HAS_FRONTEND = existsSync(path.join(DIST_DIR, "index.html"));
+
 const app = express();
 
 app.use(helmet());
@@ -26,6 +31,10 @@ app.use(express.json());
 app.use(cookieParser());
 app.use("/uploads", express.static(`${import.meta.dirname}/../uploads`));
 
+if (HAS_FRONTEND) {
+  app.use(express.static(DIST_DIR));
+}
+
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", message: "API NutriEstudiante funcionando" });
 });
@@ -38,6 +47,20 @@ app.use("/api/recipes", recipeRoutes);
 app.use("/api/exercises", exerciseRoutes);
 app.use("/api/tips", tipRoutes);
 app.use("/api/admin", adminRoutes);
+
+if (HAS_FRONTEND) {
+  app.use((req, res, next) => {
+    if (
+      req.method !== "GET" ||
+      req.path.startsWith("/api") ||
+      req.path.startsWith("/uploads")
+    ) {
+      next();
+      return;
+    }
+    res.sendFile(path.join(DIST_DIR, "index.html"));
+  });
+}
 
 await connectDB();
 

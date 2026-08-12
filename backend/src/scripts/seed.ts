@@ -59,7 +59,7 @@ const RECIPES = [
       "Cubre con miel y espolvorea canela.",
     ],
     nutrition: { calories: 420, protein: 13, carbs: 64, fat: 13 },
-    image: "",
+    image: "/uploads/avena-fruta-miel.jpg",
   },
   {
     title: "Yogur griego con frutos rojos",
@@ -79,7 +79,7 @@ const RECIPES = [
       "Endulza con la miel y mezcla suavemente.",
     ],
     nutrition: { calories: 190, protein: 15, carbs: 20, fat: 5 },
-    image: "",
+    image: "/uploads/yogurt-frutos-rojos.jpeg",
   },
   {
     title: "Tostadas de aguacate con huevo",
@@ -101,7 +101,7 @@ const RECIPES = [
       "Coloca los huevos sobre el aguacate y acompaña con tomate.",
     ],
     nutrition: { calories: 330, protein: 15, carbs: 30, fat: 17 },
-    image: "",
+    image: "/uploads/tostada-palta-huevo.jpg",
   },
   {
     title: "Ensalada de pollo con quinoa",
@@ -123,7 +123,7 @@ const RECIPES = [
       "Aliña con limón, aceite de oliva y sal al gusto.",
     ],
     nutrition: { calories: 420, protein: 34, carbs: 40, fat: 12 },
-    image: "",
+    image: "/uploads/ensalada-pollo-quinua.jpg",
   },
   {
     title: "Lentejas con verduras y arroz integral",
@@ -147,7 +147,7 @@ const RECIPES = [
       "Sirve con el arroz integral.",
     ],
     nutrition: { calories: 450, protein: 22, carbs: 66, fat: 8 },
-    image: "",
+    image: "/uploads/lentejas-verduras-arroz.jpg",
   },
   {
     title: "Salmón al horno con vegetales",
@@ -169,7 +169,7 @@ const RECIPES = [
       "Hornea 15-18 minutos hasta que el salmón esté cocido.",
     ],
     nutrition: { calories: 480, protein: 38, carbs: 18, fat: 28 },
-    image: "",
+    image: "/uploads/salmon-al-horno-vegetales.jpg",
   },
   {
     title: "Pechuga a la plancha con brócoli",
@@ -190,7 +190,7 @@ const RECIPES = [
       "Sirve la pechuga acompañada del brócoli.",
     ],
     nutrition: { calories: 290, protein: 38, carbs: 14, fat: 8 },
-    image: "",
+    image: "/uploads/pechuga-pollo-brocoli.jpg",
   },
   {
     title: "Sopa de verduras con pollo",
@@ -213,7 +213,7 @@ const RECIPES = [
       "Sazona con perejil y sal al gusto.",
     ],
     nutrition: { calories: 210, protein: 24, carbs: 18, fat: 4 },
-    image: "",
+    image: "/uploads/sopa-verduras-pollo.jpg",
   },
   {
     title: "Tortilla de claras con espinaca",
@@ -234,7 +234,7 @@ const RECIPES = [
       "Cocina a fuego medio hasta que cuaje por ambos lados.",
     ],
     nutrition: { calories: 200, protein: 24, carbs: 10, fat: 7 },
-    image: "",
+    image: "/uploads/huevo-espinaca.jpeg",
   },
   {
     title: "Quinoa con garbanzos y tomate",
@@ -256,7 +256,7 @@ const RECIPES = [
       "Deja reposar 5 minutos y sirve.",
     ],
     nutrition: { calories: 380, protein: 16, carbs: 56, fat: 10 },
-    image: "",
+    image: "/uploads/quinua-garbanzos.jpg",
   },
   {
     title: "Frutos secos con yogur",
@@ -276,7 +276,7 @@ const RECIPES = [
       "Endulza con la miel y mezcla.",
     ],
     nutrition: { calories: 350, protein: 12, carbs: 26, fat: 22 },
-    image: "",
+    image: "/uploads/frutos-secos-yogurt.jpg",
   },
   {
     title: "Palitos de vegetales con hummus",
@@ -295,7 +295,7 @@ const RECIPES = [
       "Sirve con el hummus como dip.",
     ],
     nutrition: { calories: 180, protein: 6, carbs: 22, fat: 8 },
-    image: "",
+    image: "/uploads/palillos-fruta-hummus.jpg",
   },
   {
     title: "Batido de plátano, avena y maní",
@@ -316,7 +316,7 @@ const RECIPES = [
       "Sirve inmediatamente.",
     ],
     nutrition: { calories: 420, protein: 14, carbs: 62, fat: 14 },
-    image: "",
+    image: "/uploads/avena-platano-mani-batido.jpg",
   },
   {
     title: "Batido verde de espinaca y manzana",
@@ -337,7 +337,7 @@ const RECIPES = [
       "Licúa y sirve con hielo.",
     ],
     nutrition: { calories: 160, protein: 4, carbs: 32, fat: 2 },
-    image: "",
+    image: "/uploads/batido-espinaca-manzana.jpg",
   },
   {
     title: "Gelatina de frutas",
@@ -356,7 +356,7 @@ const RECIPES = [
       "Refrigera hasta que cuaje y sirve.",
     ],
     nutrition: { calories: 90, protein: 2, carbs: 20, fat: 0 },
-    image: "",
+    image: "/uploads/gelatina-frutas.jpg",
   },
 ];
 

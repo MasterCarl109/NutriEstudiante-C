@@ -1,0 +1,198 @@
+# NutriEstudiante – Guía de Despliegue
+
+> Objetivo: publicar la aplicación para que un grupo selecto de usuarios (~20-100) acceda mediante una URL, sin depender de `localhost`.
+> Costo objetivo: **$0** (tiers gratuitos).
+> Principios: KISS, YAGNI, DRY.
+
+---
+
+# 1. Arquitectura de despliegue
+
+Un único servicio web que sirve frontend y backend (mismo origen). Esta es la opción más simple y la que la planificación ya anticipaba en FASE 4.
+
+```
+https://<app>.onrender.com            (Render free, HTTPS automático)
+        │
+   ┌────┴──────────────────────────────┐
+   │  Servicio web único (Bun)         │
+   │  backend/src/index.ts             │
+   │   ├─ /api/*      → rutas API      │
+   │   ├─ /uploads/*  → imágenes       │
+   │   └─ /*          → frontend/dist  │
+   │                    (SPA + fallback)│
+   └───────────────────────────────────┘
+        │
+   MongoDB Atlas M0 (free, gestionado)
+```
+
+## Por qué mismo origen
+
+- El proxy de `frontend/vite.config.ts` (`/api` y `/uploads` → `localhost:4000`) **solo funciona en desarrollo** (dev server de Vite). No existe en el build de producción.
+- Sirviendo `frontend/dist` desde Express, `/api` y `/uploads` se resuelven en el mismo origen y `VITE_API_URL` usa su valor por defecto (`/api`). **No se modifica `vite.config.ts` ni el frontend.**
+- Las cookies de sesión usan `SameSite=Strict` y `Secure` en producción (`backend/src/controllers/authController.ts`). Con mismo origen + HTTPS funcionan sin cambios. En dominios separados se romperían.
+
+---
+
+# 2. Cambios de código
+
+> Estado: **ya aplicados** en `backend/src/index.ts`.
+
+## 2.1 Servir el frontend desde Express
+
+`backend/src/index.ts` fue modificado para:
+
+1. Calcular la ruta del build del frontend: `frontend/dist`.
+2. Servir `frontend/dist` como estático.
+3. Añadir un *fallback* SPA: cualquier `GET` que no sea `/api` ni `/uploads` devuelve `index.html` (necesario porque la app usa `BrowserRouter`).
+
+Cambios en el archivo:
+
+```ts
+import path from "node:path";
+
+const DIST_DIR = path.resolve(import.meta.dirname, "../../frontend/dist");
+```
+
+Registrar el estático después de los middlewares base y **antes de las rutas** (o al final junto al fallback):
+
+```ts
+if (import.meta.env?.PROD === true || process.env.NODE_ENV === "production") {
+  app.use(express.static(DIST_DIR));
+}
+```
+
+> Nota: al usar `bun start` no existe `import.meta.env`; para simplificar, servir el estático siempre (no molesta en desarrollo). En desarrollo los `GET` a rutas no-API de Vite se sirven por el dev server de Vite (puerto 5173), por lo que nunca llegan al backend.
+
+Middleware final (después de todas las rutas):
+
+```ts
+app.use((req, res, next) => {
+  if (req.method !== "GET" || req.path.startsWith("/api") || req.path.startsWith("/uploads")) {
+    next();
+    return;
+  }
+  res.sendFile(path.join(DIST_DIR, "index.html"));
+});
+```
+
+## 2.2 Imágenes versionadas
+
+- Las imágenes de recetas viven en `backend/uploads/`. **Deben estar en git** para desplegarse con el repo (ver Paso 3.4).
+- Comando: `git add backend/uploads && git commit`.
+- La imagen de prueba `toypendejo.jpg` fue removida (no referenciada por el seed).
+- El seed referencia 15 imágenes; verificar que las 15 existan: `avena-fruta-miel.jpg`, `yogurt-frutos-rojos.jpeg`, `tostada-palta-huevo.jpg`, `ensalada-pollo-quinua.jpg`, `lentejas-verduras-arroz.jpg`, `salmon-al-horno-vegetales.jpg`, `pechuga-pollo-brocoli.jpg`, `sopa-verduras-pollo.jpg`, `huevo-espinaca.jpeg`, `quinua-garbanzos.jpg`, `frutos-secos-yogurt.jpg`, `palillos-fruta-hummus.jpg`, `avena-platano-mani-batido.jpg`, `batido-espinaca-manzana.jpg`, `gelatina-frutas.jpg`.
+
+---
+
+# 3. Paso a paso del despliegue
+
+## Paso 3.1: MongoDB Atlas (free M0)
+
+1. Crear cuenta en https://www.mongodb.com/atlas.
+2. Crear un **cluster M0 (free)**.
+3. En *Database Access*: crear un usuario con contraseña (guardarla).
+4. En *Network Access*: permitir `0.0.0.0/0` (cualquier IP) o, si Render lo provee, la IP del servicio.
+5. En *Databases* → *Connect* → copiar el connection string, ej.:
+   `mongodb+srv://<usuario>:<password>@cluster0.xxxxx.mongodb.net/?retryWrites=true&w=majority`
+
+## Paso 3.2: Seed contra Atlas (una sola vez)
+
+El contenido y el admin se insertan una sola vez. Opción más simple: correr el seed **desde local** apuntando a Atlas.
+
+1. En `backend/.env` (local) reemplazar temporalmente `MONGODB_URI` por el connection string de Atlas (y ajustar `ADMIN_EMAIL` / `ADMIN_PASSWORD`).
+2. Ejecutar:
+   ```bash
+   bun --cwd backend run seed
+   ```
+3. Verificar en Atlas (Browse Collections) que existan: `users` (admin con rol `admin`), `recipes` (15), `exercises` (12), `tips` (8).
+4. Dejar el `.env` local como estaba (no se sube a git).
+
+## Paso 3.3: Commit y push del código e imágenes
+
+Antes de crear el servicio en Render, subir a GitHub los cambios de código y las imágenes:
+
+1. Verificar que `backend/uploads/` tenga las 15 imágenes y que el build compile:
+   ```bash
+   bun --cwd backend typecheck
+   bun --cwd frontend build
+   ```
+2. Commitear y hacer push (incluye el código modificado, las imágenes nuevas y la carpeta `assets/` obsoleta):
+   ```bash
+   git add backend/src frontend/src backend/uploads assets
+   git commit -m "Despliegue: servir frontend desde Express + imágenes"
+   git push origin main
+   ```
+
+## Paso 3.4: Render (Web Service free)
+
+1. Crear cuenta en https://render.com (login con GitHub).
+2. *New* → *Web Service* → conectar el repo `MasterCarl109/NutriEstudiante-C`.
+3. Configuración:
+
+   | Campo | Valor |
+   |---|---|
+   | Name | `nutriestudiante` (define la URL) |
+   | Runtime | Bun (lo detecta por `bun.lock`) |
+   | Build Command | `bun install && bun --cwd backend install && bun --cwd frontend install && bun --cwd frontend build` |
+   | Start Command | `bun --cwd backend start` |
+   | Instance Type | Free |
+
+4. En *Environment Variables*:
+
+   | Variable | Valor |
+   |---|---|
+   | `MONGODB_URI` | connection string de Atlas |
+   | `CLIENT_ORIGIN` | `https://<app>.onrender.com` |
+   | `ADMIN_EMAIL` | correo del admin |
+   | `ADMIN_PASSWORD` | contraseña del admin |
+   | `NODE_ENV` | `production` (activa cookies `Secure`) |
+   | `PORT` | Render lo inyecta automáticamente (no definirlo) |
+
+5. *Deploy Web Service*.
+
+> El `PORT` de producción lo asigna Render. El backend ya usa `process.env.PORT` (`backend/src/config/index.ts`).
+
+---
+
+# 4. Verificación
+
+- [ ] `https://<app>.onrender.com/api/health` responde `{ status: "ok" }`.
+- [ ] La URL raíz carga el Home de la app.
+- [ ] Login con el usuario admin (perfil > menú Admin).
+- [ ] Las tarjetas de recetas muestran imágenes (`/uploads/*`).
+- [ ] Recargar una ruta profunda (`/dashboard`, `/recipes/<id>`) no da 404.
+- [ ] Confirmar HTTPS en la barra de direcciones (requisito de las cookies `Secure`).
+- [ ] Enviar la URL a un usuario de prueba y verificar registro/login en otro dispositivo.
+
+---
+
+# 5. Limitaciones del free tier (aceptadas)
+
+- El servicio **duerme** tras ~15 min sin tráfico y la primera visita tarda ~1 min en despertar. Aceptable para un grupo selecto.
+- 512 MB de RAM y 512 MB de almacenamiento (Atlas M0 también limita a 512 MB). Suficiente para el alcance actual.
+- Si el proyecto crece, migrar a un plan de pago o a un VPS no requiere cambios de arquitectura.
+
+---
+
+# 6. Notas de seguridad
+
+- `backend/.env` no se sube al repositorio (ignorado por `.gitignore`). Los secretos viven solo en las variables de entorno de Render.
+- No exponer `ADMIN_EMAIL` / `ADMIN_PASSWORD` en el código ni en el repo.
+- `NODE_ENV=production` activa las cookies `Secure` (solo HTTPS). Sin HTTPS la sesión no persiste.
+- Validar antes de cada deploy:
+  ```bash
+  bun --cwd backend typecheck
+  bun --cwd frontend lint
+  bun --cwd frontend build
+  ```
+
+---
+
+# 7. Redeploys futuros
+
+Cada vez que haya cambios en `main`:
+
+1. Ejecutar las verificaciones del punto 6.
+2. Commitear y hacer push.
+3. En Render, *Manual Deploy* → *Deploy latest commit* (o activar auto-deploy).
+4. No es necesario re-correr el seed (el contenido ya existe en Atlas; el seed no sobrescribe).
