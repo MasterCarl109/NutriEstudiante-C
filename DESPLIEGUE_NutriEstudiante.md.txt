@@ -86,7 +86,9 @@ app.use((req, res, next) => {
 
 # 3. Paso a paso del despliegue
 
-## Paso 3.1: MongoDB Atlas (free M0)
+> Estado: Pasos 3.1, 3.2 y 3.3 **completados**. Credenciales en `atlas-credentials.env` (ignorado por git).
+
+## Paso 3.1: MongoDB Atlas (free M0) — ✅ completado
 
 1. Crear cuenta en https://www.mongodb.com/atlas.
 2. Crear un **cluster M0 (free)**.
@@ -95,19 +97,30 @@ app.use((req, res, next) => {
 5. En *Databases* → *Connect* → copiar el connection string, ej.:
    `mongodb+srv://<usuario>:<password>@cluster0.xxxxx.mongodb.net/?retryWrites=true&w=majority`
 
-## Paso 3.2: Seed contra Atlas (una sola vez)
+## Paso 3.2: Seed contra Atlas (una sola vez) — ✅ completado
 
-El contenido y el admin se insertan una sola vez. Opción más simple: correr el seed **desde local** apuntando a Atlas.
+El contenido y el admin se insertan una sola vez. Se corrió el seed **desde local** apuntando a Atlas:
 
-1. En `backend/.env` (local) reemplazar temporalmente `MONGODB_URI` por el connection string de Atlas (y ajustar `ADMIN_EMAIL` / `ADMIN_PASSWORD`).
-2. Ejecutar:
-   ```bash
-   bun --cwd backend run seed
-   ```
-3. Verificar en Atlas (Browse Collections) que existan: `users` (admin con rol `admin`), `recipes` (15), `exercises` (12), `tips` (8).
-4. Dejar el `.env` local como estaba (no se sube a git).
+```powershell
+$env:MONGODB_URI="<connection string>"
+$env:ADMIN_EMAIL="<email admin>"
+$env:ADMIN_PASSWORD="<password admin>"
+bun run seed    # ejecutar dentro de backend/
+```
 
-## Paso 3.3: Commit y push del código e imágenes
+Verificado en Atlas: `users` (1, admin), `recipes` (15), `exercises` (12), `tips` (8).
+
+> **Importante:** el seed crea el admin solo si no existe; si existe no actualiza su contraseña. Por eso las credenciales del admin se definieron en este paso (están en `atlas-credentials.env`).
+
+### Nota: DNS SRV en Windows local
+
+En la red local, Bun falló resolviendo `mongodb+srv://` (`querySrv ECONNREFUSED`), aunque `Resolve-DnsName` resuelve bien. En Render (Linux) el SRV funciona sin problema. Si el SRV fallara localmente, usar la URI completa del replica set (obtenida con `Resolve-DnsName` + `hello`), que evita la consulta SRV:
+
+```
+mongodb://<user>:<pass>@<shard-00-00>.mongodb.net:27017,<shard-00-01>.mongodb.net:27017,<shard-00-02>.mongodb.net:27017/nutriestudiante?ssl=true&authSource=admin&replicaSet=<nombre>&retryWrites=true&w=majority
+```
+
+## Paso 3.3: Commit y push del código e imágenes — ✅ completado
 
 Antes de crear el servicio en Render, subir a GitHub los cambios de código y las imágenes:
 
@@ -137,14 +150,14 @@ Antes de crear el servicio en Render, subir a GitHub los cambios de código y la
    | Start Command | `bun --cwd backend start` |
    | Instance Type | Free |
 
-4. En *Environment Variables*:
+4. En *Environment Variables* (valores concretos en `atlas-credentials.env`):
 
    | Variable | Valor |
    |---|---|
-   | `MONGODB_URI` | connection string de Atlas |
-   | `CLIENT_ORIGIN` | `https://<app>.onrender.com` |
-   | `ADMIN_EMAIL` | correo del admin |
-   | `ADMIN_PASSWORD` | contraseña del admin |
+   | `MONGODB_URI` | `mongodb+srv://mastercarl109_db_user:Adonay1.10@nutricluster.nruyhhq.mongodb.net/nutriestudiante` |
+   | `CLIENT_ORIGIN` | `https://nutriestudiante.onrender.com` |
+   | `ADMIN_EMAIL` | `admin@nutriestudiante.dev` |
+   | `ADMIN_PASSWORD` | ver `atlas-credentials.env` |
    | `NODE_ENV` | `production` (activa cookies `Secure`) |
    | `PORT` | Render lo inyecta automáticamente (no definirlo) |
 
