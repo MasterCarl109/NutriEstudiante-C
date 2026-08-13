@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import {
   Alert,
   Box,
@@ -12,6 +12,7 @@ import {
 } from '@mui/material'
 import { useAuth } from '../context/AuthContext'
 import { updateProfile, changePassword } from '../services/auth'
+import { fetchRecords } from '../services/tracking'
 import PageHeader from '../components/PageHeader'
 
 function Profile() {
@@ -33,6 +34,22 @@ function Profile() {
   const [pwMsg, setPwMsg] = useState<string | null>(null)
   const [pwError, setPwError] = useState<string | null>(null)
   const [changing, setChanging] = useState(false)
+
+  useEffect(() => {
+    let active = true
+    fetchRecords()
+      .then((records) => {
+        if (!active || records.length === 0) return
+        const latest = [...records].sort(
+          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+        )[0]
+        setWeight(latest.weight.toString())
+      })
+      .catch(() => undefined)
+    return () => {
+      active = false
+    }
+  }, [])
 
   const toNumberOrNull = (value: string): number | null =>
     value.trim() === '' ? null : Number(value)

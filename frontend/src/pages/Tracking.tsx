@@ -40,8 +40,9 @@ function Tracking() {
   const { user } = useAuth()
   const [records, setRecords] = useState<WeightRecord[]>([])
   const [loading, setLoading] = useState(true)
+  const today = new Date().toISOString().slice(0, 10)
   const [weight, setWeight] = useState('')
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10))
+  const [date, setDate] = useState(today)
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
 
@@ -123,6 +124,7 @@ function Tracking() {
                   fullWidth
                   required
                   margin="normal"
+                  slotProps={{ htmlInput: { max: today } }}
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
                 />

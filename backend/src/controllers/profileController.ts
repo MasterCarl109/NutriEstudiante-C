@@ -2,6 +2,7 @@ import type { Response } from "express";
 import bcrypt from "bcryptjs";
 import { UserModel } from "../models/User.js";
 import type { AuthedRequest } from "../middleware/auth.js";
+import { upsertWeightRecord } from "../utils/weightRecord.js";
 
 export async function updateProfile(
   req: AuthedRequest,
@@ -22,14 +23,18 @@ export async function updateProfile(
   }
 
   try {
-    const user = await UserModel.findByIdAndUpdate(req.userId, updates, {
-      new: true,
-      runValidators: true,
-    });
+    const user = await UserModel.findById(req.userId);
     if (!user) {
       res.status(404).json({ error: "Usuario no encontrado" });
       return;
     }
+
+    if (weight !== undefined && user.weight !== weight) {
+      await upsertWeightRecord(req.userId!, weight);
+    }
+
+    Object.assign(user, updates);
+    await user.save();
     res.json({ user });
   } catch (err) {
     if ((err as Error).name === "ValidationError") {

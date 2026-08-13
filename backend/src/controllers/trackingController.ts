@@ -1,6 +1,11 @@
 import type { Response } from "express";
 import { WeightRecordModel } from "../models/WeightRecord.js";
 import type { AuthedRequest } from "../middleware/auth.js";
+import {
+  startOfDay,
+  upsertWeightRecord,
+  syncCurrentWeight,
+} from "../utils/weightRecord.js";
 
 export async function createRecord(
   req: AuthedRequest,
@@ -13,12 +18,14 @@ export async function createRecord(
     return;
   }
 
+  if (date && startOfDay(date) > startOfDay()) {
+    res.status(400).json({ error: "La fecha no puede ser en el futuro" });
+    return;
+  }
+
   try {
-    const record = await WeightRecordModel.create({
-      user: req.userId,
-      weight,
-      date: date ? new Date(date) : undefined,
-    });
+    const record = await upsertWeightRecord(req.userId!, weight, date);
+    await syncCurrentWeight(req.userId!);
     res.status(201).json({ record });
   } catch (err) {
     if ((err as Error).name === "ValidationError") {

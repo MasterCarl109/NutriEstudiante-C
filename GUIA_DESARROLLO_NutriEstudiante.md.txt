@@ -47,6 +47,40 @@ Fase actual: **En desarrollo (refinamiento)**.
 
 ---
 
+## Pulido: sincronización peso ↔ Mi progreso
+
+> El peso editado en **Mi perfil** se refleja automáticamente en **Mi progreso** y viceversa. Avances marcados con ✅.
+
+### Comportamiento deseado
+
+- [x] En **Mi progreso** el calendario no permite seleccionar fechas mayores a la actual (`max` = hoy en el input de fecha).
+- [x] El campo **peso de Mi perfil** muestra el peso más reciente agregado (se inicializa con el último registro de Mi progreso).
+- [x] La primera vez que se guarda el peso en el perfil, queda registrado en Mi progreso con la fecha actual.
+- [x] Si ya existe un registro del mismo día, se **reemplaza** (no se duplica).
+
+### Backend
+
+- [x] `utils/weightRecord.ts` (nuevo): `startOfDay` (normaliza a inicio de día UTC), `upsertWeightRecord` (crea o reemplaza por usuario + fecha) y `syncCurrentWeight` (actualiza `User.weight` con el registro más reciente por fecha).
+- [x] `trackingController.createRecord`: valida que la fecha no sea futura, usa upsert por usuario + fecha (mismo día → reemplaza) y sincroniza `User.weight`.
+- [x] `profileController.updateProfile`: si el peso enviado difiere del actual, hace upsert del registro de hoy en Mi progreso.
+
+### Frontend
+
+- [x] `Tracking.tsx`: input de fecha con `max` = hoy.
+- [x] `Profile.tsx`: al montar, carga el último registro de Mi progreso como valor inicial del campo peso.
+
+### Verificación
+
+- [x] `bun --cwd backend typecheck` sin errores.
+- [x] `bun --cwd frontend lint` sin errores.
+- [x] `bun --cwd frontend build` correcto.
+- [ ] Manual: guardar peso en perfil → aparece en Mi progreso con fecha de hoy.
+- [ ] Manual: registrar dos pesos el mismo día → solo queda el último (se reemplaza).
+- [ ] Manual: registrar un peso desde Mi progreso → el campo peso de Mi perfil lo muestra al recargar.
+- [ ] Manual: el calendario de Mi progreso no permite fechas futuras.
+
+---
+
 # FASE 0: Preparación del Entorno
 
 ## Paso 0.1: Instalar herramientas base
